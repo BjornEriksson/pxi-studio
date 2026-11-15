@@ -44,11 +44,16 @@ body {
 }
 
 /* -------------------------------------------------------------------------
-   2. MAIN 800x600 APPLICATION WINDOW
+   2. MAIN RESIZABLE APPLICATION WINDOW
    ------------------------------------------------------------------------- */
 .app-window {
   width: 800px;
   height: 600px;
+  min-width: 540px;
+  min-height: 400px;
+  max-width: 96vw;
+  max-height: 94vh;
+  resize: both;
   background-color: var(--bg-window);
   border-top: 2px solid var(--border-light);
   border-left: 2px solid var(--border-light);
@@ -59,6 +64,7 @@ body {
   flex-direction: column;
   overflow: hidden;
 }
+
 
 /* -------------------------------------------------------------------------
    3. TOP MENU BAR & DROPDOWNS
@@ -429,6 +435,18 @@ body {
   width: 80px;
   padding: 3px;
   user-select: text;
+}
+
+.modal-size-preview {
+  text-align: center;
+  margin-top: 10px;
+  padding: 5px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-dark);
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-main);
 }
 
 .modal-actions {

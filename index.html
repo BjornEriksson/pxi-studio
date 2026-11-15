@@ -1,8 +1,8 @@
 <!--
- * PixelImage (.pxi) Studio - Main Canvas Controller
- * @file app.js
+ * PixelImage (.pxi) Studio - Main Interface
+ * @file index.html
  * @author BjornEriksson (https://github.com)
- * @version 0.2.0-beta
+ * @version 0.4.1-beta
  -->
 <!DOCTYPE html>
 <html lang="en">
@@ -12,16 +12,11 @@
   <title>PixelImage (.pxi) Studio</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-preset="default">
 
-  <!-- =====================================================================
-       MAIN APPLICATION WINDOW (800x600 Classic Desktop Graphics Layout)
-       ===================================================================== -->
   <div id="app-window" class="app-window">
 
-    <!-- -------------------------------------------------------------------
-         SECTION 1: TOP MENU BAR
-         ------------------------------------------------------------------- -->
+    <!-- SECTION 1: TOP MENU BAR -->
     <header id="top-menu-bar" class="top-menu-bar">
       <div class="menu-group">
         <div class="menu-item">
@@ -29,17 +24,19 @@
           <div class="menu-dropdown">
             <button type="button" id="menu-new">New Image...</button>
             <button type="button" id="menu-open">Open .pxi File...</button>
-			<button type="button" id="menu-restore-tmp" disabled>Restore Autosave</button>
+            <button type="button" id="menu-restore-tmp" disabled>Restore Autosave</button>
             <hr>
             <button type="button" id="menu-save-pxi">Save as .pxi</button>
-            <!-- Placeholder for future .pxx / PNG export -->
           </div>
         </div>
 
         <div class="menu-item">
           <button type="button" class="menu-trigger">Edit</button>
           <div class="menu-dropdown">
-			<button type="button" id="menu-undo">Undo</button>
+            <button type="button" id="menu-undo">Undo</button>
+            <hr>
+            <button type="button" id="menu-flip-h">Flip Horizontal</button>
+            <button type="button" id="menu-flip-v">Flip Vertical</button>
             <hr>
             <button type="button" id="menu-clear-white">Clear to White</button>
             <button type="button" id="menu-fill-current">Fill with Active Color</button>
@@ -48,58 +45,102 @@
 
         <div class="menu-item">
           <button type="button" class="menu-trigger">Presets</button>
-          <div class="menu-dropdown">
-            <button type="button" id="preset-300x250">Default Art (60×50 @ 5x = 300×250px)</button>
-            <button type="button" id="preset-banner">Banner Standard (96×12 @ 5x = 480×60px)</button>
-            <button type="button" id="preset-raw300">1:1 Raw Canvas (300×250 @ 1x)</button>
+          <div class="menu-dropdown" id="preset-menu-list">
+            <button type="button" data-preset-key="default">Default Art (60×50 @ 5x = 300×250px)</button>
+            <hr>
+            <button type="button" data-preset-key="small_square_125">Small Square (21×21 @ 5x = 125×125px)</button>
+            <button type="button" data-preset-key="double_tile_251">Double Tile (42×21 @ 5x = 251×125px)</button>
+            <button type="button" data-preset-key="medium_square_250">Medium Square (36×36 @ 5x = 250×250px)</button>
+            <button type="button" data-preset-key="widescreen_led_600">Widescreen LED (86×18 @ 5x = 600×124px)</button>
+            <hr>
+            <button type="button" data-preset-key="raw_canvas_300">1:1 Raw Canvas (300×250 @ 1x)</button>
           </div>
         </div>
       </div>
 
-      <div class="app-title">PixelImage (.pxi) Studio v0.1</div>
+      <div class="app-title">PixelImage (.pxi) Studio v0.4</div>
     </header>
 
-    <!-- Hidden file input for opening .pxi files -->
     <input type="file" id="file-input-pxi" accept=".pxi" hidden>
 
-    <!-- -------------------------------------------------------------------
-         SECTION 2: MIDDLE WORKSPACE (Left Tools | Center Canvas | Right Panels)
-         ------------------------------------------------------------------- -->
+    <!-- SECTION 2: MIDDLE WORKSPACE -->
     <div id="workspace" class="workspace">
 
-      <!-- 2A. LEFT TOOLBAR (Drawing Tools) -->
+      <!-- 2A. LEFT TOOLBAR (7 Logical Tool Pairs + Quick Undo) -->
       <aside id="left-toolbar" class="left-toolbar">
         <div class="panel-label">Tools</div>
         <div class="tool-grid">
-          <button type="button" class="tool-btn active" data-tool="pencil" title="Pencil (Draw Pixels)">✏️</button>
-          <button type="button" class="tool-btn" data-tool="eraser" title="Eraser (Paint White)">🧽</button>
-          <button type="button" class="tool-btn" data-tool="fill" title="Flood Fill Bucket">🪣</button>
-          <button type="button" class="tool-btn" data-tool="picker" title="Color Eyedropper">💉</button>
+          <!-- Row 1: 1px Pencil & Multi-px Brush -->
+          <button type="button" class="tool-btn active" data-tool="pencil" title="Pencil (1×1 px)">✏️</button>
+          <button type="button" class="tool-btn" data-tool="brush" title="Brush (2×2 / 3×3 / 5×5 px)">🖌️</button>
+
+          <!-- Row 2: Straight Line & Eraser -->
           <button type="button" class="tool-btn" data-tool="line" title="Straight Line">📏</button>
-          <button type="button" class="tool-btn" data-tool="rect" title="Rectangle">⬜</button>
+          <button type="button" class="tool-btn" data-tool="eraser" title="Eraser (Paint White)">🧽</button>
+
+          <!-- Row 3: Flood Fill & Gradient -->
+          <button type="button" class="tool-btn" data-tool="fill" title="Flood Fill Bucket">🪣</button>
+          <button type="button" class="tool-btn" data-tool="gradient" title="Linear Gradient">🌈</button>
+
+          <!-- Row 4: Rectangle (Outline & Filled) -->
+          <button type="button" class="tool-btn" data-tool="rect" title="Rectangle (Outline)">
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" fill="none" stroke="#111827" stroke-width="1.8"/></svg>
+          </button>
+          <button type="button" class="tool-btn" data-tool="rect-filled" title="Rectangle (Filled)">
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" fill="#111827"/></svg>
+          </button>
+
+          <!-- Row 5: Circle (Outline & Filled) -->
+          <button type="button" class="tool-btn" data-tool="circle" title="Circle (Outline)">
+            <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5" fill="none" stroke="#111827" stroke-width="1.8"/></svg>
+          </button>
+          <button type="button" class="tool-btn" data-tool="circle-filled" title="Circle (Filled)">
+            <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#111827"/></svg>
+          </button>
+
+          <!-- Row 6: Ellipse / Oval (Outline & Filled) -->
+          <button type="button" class="tool-btn" data-tool="ellipse" title="Ellipse / Oval (Outline)">
+            <svg width="16" height="16" viewBox="0 0 16 16"><ellipse cx="8" cy="8" rx="6.5" ry="4" fill="none" stroke="#111827" stroke-width="1.8"/></svg>
+          </button>
+          <button type="button" class="tool-btn" data-tool="ellipse-filled" title="Ellipse / Oval (Filled)">
+            <svg width="16" height="16" viewBox="0 0 16 16"><ellipse cx="8" cy="8" rx="7" ry="4.5" fill="#111827"/></svg>
+          </button>
+
+          <!-- Row 7: Eyedropper & Quick Undo -->
+          <button type="button" class="tool-btn" data-tool="picker" title="Color Eyedropper">💉</button>
+          <button type="button" id="toolbar-undo-btn" class="tool-btn" title="Undo Last Action" disabled>↩️</button>
         </div>
 
-        <!-- Future Tool Extensions Placeholder -->
+        <!-- Contextual Tool Options (Brush Size & Gradient Start Color) -->
         <div id="extra-tools-slot" class="extra-slot"></div>
       </aside>
 
       <!-- 2B. CENTER CANVAS VIEWPORT -->
       <main id="canvas-viewport" class="canvas-viewport">
         <div id="canvas-frame" class="canvas-frame">
-          <!-- Default 300x250 display size (60x50 logical pixels at 5x scale) -->
-          <canvas id="editor-canvas" width="300" height="250"></canvas>
+          <canvas id="editor-canvas" width="359" height="299"></canvas>
         </div>
       </main>
 
-      <!-- 2C. RIGHT SIDEBAR (9-Bit Color Picker & Raster Settings) -->
+      <!-- 2C. RIGHT SIDEBAR -->
       <aside id="right-sidebar" class="right-sidebar">
 
         <!-- Color Picker Section -->
         <section id="color-panel" class="sidebar-section">
-          <div class="panel-label">9-Bit Color (512)</div>
+          <div class="panel-label">Palette &amp; Color</div>
+
+          <div class="control-row">
+            <select id="palette-mode-select" style="width: 100%;" title="Select Color Bit Depth">
+              <option value="3">8-Bit Classic VGA (256)</option>
+              <option value="0" selected>9-Bit Retro (512) [Default]</option>
+              <option value="1">12-Bit Amiga (4,096)</option>
+              <option value="4">16-Bit High Color (65,536)</option>
+              <option value="2">24-Bit True Color (16.7M)</option>
+            </select>
+          </div>
 
           <div class="active-color-row">
-            <div id="active-color-swatch" class="color-swatch" title="Active Paint Color"></div>
+            <div id="active-color-swatch" class="color-swatch" title="Click to open palette picker"></div>
             <div class="color-readout">
               <span id="color-rgb-text">R:0 G:0 B:0</span>
               <span id="color-hex-text">#000000</span>
@@ -113,9 +154,7 @@
           </div>
 
           <div class="panel-sublabel">Quick Swatches</div>
-          <div id="quick-palette" class="quick-palette">
-            <!-- Populated dynamically by JS -->
-          </div>
+          <div id="quick-palette" class="quick-palette"></div>
         </section>
 
         <!-- Raster Configuration Section -->
@@ -143,7 +182,7 @@
 
           <div class="control-row">
             <span>Raster Color:</span>
-            <button type="button" id="set-raster-color-btn" class="mini-btn" title="Apply active 9-bit color to raster">Use Active</button>
+            <button type="button" id="set-raster-color-btn" class="mini-btn" title="Apply active color to raster">Use Active</button>
           </div>
           <div id="raster-color-preview" class="raster-color-bar"></div>
         </section>
@@ -157,46 +196,45 @@
       </aside>
     </div>
 
-    <!-- -------------------------------------------------------------------
-         SECTION 3: BOTTOM STATUS BAR
-         ------------------------------------------------------------------- -->
+    <!-- SECTION 3: BOTTOM STATUS BAR -->
     <footer id="status-bar" class="status-bar">
-      <span id="status-tool">Tool: Pencil</span>
+      <span id="status-tool">Tool: pencil</span>
       <span id="status-coords">Pos: --, --</span>
-      <span id="status-dims">Grid: 60×50 (Scale 5× = 300×250px)</span>
+      <span id="status-dims">Grid: 60×50 (359×299px)</span>
       <span id="status-msg">Ready</span>
     </footer>
 
   </div>
 
-  <!-- =====================================================================
-       MODAL DIALOG: NEW IMAGE SETTINGS (Hidden by default)
-       ===================================================================== -->
+  <!-- MODAL DIALOG: NEW IMAGE SETTINGS -->
   <div id="new-image-modal" class="modal-backdrop hidden">
     <div class="modal-box">
       <h3>New PixelImage (.pxi)</h3>
       <div class="modal-row">
         <label for="new-width">Logical Width:</label>
-        <input type="number" id="new-width" min="4" max="512" value="60">
+        <input type="number" id="new-width" min="1" max="512" value="60">
       </div>
       <div class="modal-row">
         <label for="new-height">Logical Height:</label>
-        <input type="number" id="new-height" min="4" max="512" value="50">
+        <input type="number" id="new-height" min="1" max="512" value="50">
       </div>
       <div class="modal-row">
         <label for="new-scale">Pixel Scale (1–16×):</label>
         <input type="number" id="new-scale" min="1" max="16" value="5">
       </div>
+      <div class="modal-row">
+        <label for="new-raster">Raster Gap (0–16 px):</label>
+        <input type="number" id="new-raster" min="0" max="16" value="1">
+      </div>
+      <div class="modal-size-preview" id="new-visible-size">Image size: 359 × 299 px</div>
       <div class="modal-actions">
         <button type="button" id="modal-cancel-btn">Cancel</button>
-        <button type="button" id="modal-create-btn" class="primary-btn">Create</button>
+        <button type="button" class="primary-btn" id="modal-create-btn">Create</button>
       </div>
     </div>
   </div>
 
-  <!-- =====================================================================
-       MODAL DIALOG: FULL 512-COLOR 9-BIT MATRIX
-       ===================================================================== -->
+  <!-- MODAL DIALOG: ADAPTIVE PALETTE MATRIX / PICKER -->
   <div id="palette-modal" class="modal-backdrop hidden">
     <div class="modal-box palette-modal-box">
       <div class="palette-modal-header">
@@ -207,14 +245,17 @@
       <div id="palette-hover-info" class="palette-hover-info">Hover a cell to inspect RGB (000–777)</div>
     </div>
   </div>
-  
-  <!-- Scripts will be linked here -->
-<script src="color.js"></script>
-<script src="pxi-codec.js"></script>
-<script src="storage.js"></script>
-<script src="tools.js"></script>
-<script src="ui-handlers.js"></script>
-<script src="app.js"></script>
-  
+
+  <script src="color-palettes.js"></script>
+  <script src="color.js"></script>
+  <script src="palette-modal.js"></script>
+  <script src="pxi-codec.js"></script>
+  <script src="storage.js"></script>
+  <script src="tools.js"></script>
+  <script src="gradient-tool.js"></script>
+  <script src="ui-handlers.js"></script>
+  <script src="studio-config.js"></script>
+  <script src="app.js"></script>
+
 </body>
 </html>
